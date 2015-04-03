@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+using namespace std;
+
 class Node
 {
 public:
@@ -21,6 +23,8 @@ public:
 	bool getOnList();
 	void trueList();
 	void printNode();
+	bool operator<(const Node& rhs);
+
 private:
 	int x;
 	int y;
@@ -33,11 +37,11 @@ private:
 	bool onList = false;
 };
 
-struct LessThanCompareNode 
-{
-	bool operator()(Node &n1, Node &n2) {
-		// true if n1 ordered before n2
-		return n1.getF() < n2.getF();
-	}
-};
+//struct LessThanCompareNode 
+//{
+//	bool operator()(Node* n1, Node* n2) {
+//		// true if n1 ordered before n2
+//		return n1->getF() > n2->getF();
+//	}
+//};
 

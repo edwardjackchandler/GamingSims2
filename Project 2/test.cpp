@@ -1,4 +1,3 @@
-#include "test.h"
 #include "AStarAlgorithm.h"
 #include <functional>
 #include <queue>
@@ -75,25 +74,60 @@ int main()
 	start->setG(0);
 	start->calculateF();
 
+	/*priority_queue<Node*, vector<Node*>, std::less<Node*> >test;
+	Node* one = &geographyVector[4][2];
+	Node* four = &geographyVector[1][2];
+	Node* two = &geographyVector[3][2];
+	Node* three = &geographyVector[2][2];
+	Node* five = &geographyVector[0][0];
+
+	one->setG(1);
+	two->setG(1);
+	three->setG(1);
+	four->setG(1);
+	five->setG(1);
+
+	one->calculateF();
+	two->calculateF();
+	three->calculateF();
+	four->calculateF();
+	five->calculateF();
+
+	test.push(one);
+	test.push(four);
+	test.push(two);
+	test.push(three);
+	test.push(five);
+
+	test.top()->printNode();*/
+
+
 	//Contains ids of Nodes to check parents
-	priority_queue<Node, vector<Node>, LessThanCompareNode >openList;
-	vector<Node> closeList;
-	//priority_queue<Node, vector<Node>, LessThanCompareNode >openListCopy;
+	priority_queue<Node*, vector<Node*>, std::less<Node*>>openList;
+	vector<Node*> closeList;
 
-	openList.push(*start);
+	openList.push(start);
 	start->trueList();
+	start->setG(0);
+	int cLCount = 0;
 
-	for (int i = 0; i < openList.size(); i++)
+ 	while (pathFound != true)
 	{
-		while (openList.empty() == false)
+		//while (openList.empty() == false)
+		cout << "openList top: ";
+		openList.top()->printNode();
+		closeList.push_back(openList.top());
+		p = closeList[cLCount];
+		openList.pop();
+		cout << "p = ";
+		p->printNode();
+			
+		//Checks if p is end node
+		if (p == end)
 		{
-			p = &openList.top();
-			openList.pop();
-			if (p == end)
-			{
-				pathFound = true;
-			}
+			pathFound = true;
 		}
+		
 		//Next 5 if/else statements decide which nodes are connected
 
 		//If not at edges of grid
@@ -101,33 +135,48 @@ int main()
 			&& (p->getY() < gridY - 1) && (p->getY() < gridY - 1))
 		{
 			q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+			cout << "Added to q: " << "\n";
+			q[0]->printNode();
 			q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+			q[1]->printNode();
 
 			//if pointing up, add node below it to q
 			if (p->getPointUp())
 			{
-				q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+				q[2]->printNode();
 
 			}
 			//else add node above
-			else q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+			else
+			{
+				q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				q[2]->printNode();
+
+			}
+
 		}
 
 		//left
 		else if (p->getX() == 0)
 		{
 			q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+			cout << "Added to q: " << "\n";
+			q[0]->printNode();
 
 			if (p->getY() != gridY - 1 || p->getY() != 0)
 			{
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
 				{
-					q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+					q[1]->printNode();
 
 				}
 				//else add node above
-				else q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+				else q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				q[1]->printNode();
+
 			}
 		}
 
@@ -135,17 +184,22 @@ int main()
 		else if (p->getX() == gridX - 1)
 		{
 			q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+			cout << "Added to q: " << "\n";
+			q[0]->printNode();
 
 			if (p->getY() != gridY - 1 || p->getY() != 0)
 			{
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
 				{
-					q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+					q[1]->printNode();
 
 				}
 				//else add node above
-				else q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+				else q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				q[1]->printNode();
+
 			}
 		}
 
@@ -153,17 +207,22 @@ int main()
 		else if (p->getY() == gridY - 1)
 		{
 			q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+			cout << "Added to q: " << "\n";
+			q[0]->printNode();
 
 			if (p->getX() != gridX - 1 || p->getX() != 0)
 			{
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
 				{
-					q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+					q[1]->printNode();
 
 				}
 				//else add node above
-				else q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+				else q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				q[1]->printNode();
+
 			}
 		}
 
@@ -174,11 +233,15 @@ int main()
 			{
 				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
 				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+				cout << "Added to q: " << "\n";
+				q[0]->printNode();
+				q[1]->printNode();
 
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
 				{
-					q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
+					q[2]->printNode();
 
 				}
 			}
@@ -190,14 +253,15 @@ int main()
 		for (int j = 0; j < q.size(); j++)
 		{
 				
-				
+			//calculate G and F
 			int newG = AStarAlgorithm::getTileCost(typeVector, q[j]) + p->getG();
 			int newF = newG + q[j]->getH();
 			//Is Q on open / closed list?
 			if (q[j]->getOnList() == true)
 			{
-				if (newF > q[j]->getF())
+				if (newF < q[j]->getF())
 				{
+					//assign new F, G and H values
 					q[j]->setParent(p);
 					q[j]->setG(newG);
 					q[j]->calculateF();
@@ -206,14 +270,24 @@ int main()
 
 			else
 			{
-				openList.push(*q[j]);
+				openList.push(q[j]);
 				q[j]->setParent(p);
 				q[j]->setG(newG);
 				q[j]->calculateF();
 			}
 							
-			}
-	}    
+		}
+
+		cout << "ADDED TO OPENLIST: " << "\n";
+		for (int i = 0; i < q.size(); i++)
+		{
+			q[i]->printNode();
+		}
+		q.clear();
+		cLCount++;
+	}   
+
+
 
 		//If triangle points up and is not on bottom of grid 
 		//(no connected nodes can be below bottom and only 

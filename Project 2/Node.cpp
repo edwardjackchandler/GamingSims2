@@ -1,5 +1,4 @@
 #include "Node.h"
-using namespace std;
 
 Node::Node()
 {
@@ -41,9 +40,14 @@ void Node::trueList()
 	onList = true;
 }
 
+bool Node::operator<(const Node& rhs)
+{
+	return this->f < rhs.f;
+}
+
 void Node::printNode()
 {
-	cout << "Node pos: (" << x << ", " << y << ") H = " << h << " ID = " << id << " Points up = " << pointUp << "\n";
+	cout << "Node pos: (" << x << ", " << y << ") H = " << h << " F = " << f << " ID = " << id << " Points up = " << pointUp << "\n";
 }
 
 
