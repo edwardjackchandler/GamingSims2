@@ -10,7 +10,10 @@ public:
 	NodeType(string type);
 	~NodeType();
 
-	int getTypeCost() { return typeCost; };
+	int getTypeCost() const { return typeCost; };
+	string getType() const { return typeString; };
+
+	void changeType(string type);
 
 	void printType();
 private:

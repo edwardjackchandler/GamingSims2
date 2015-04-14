@@ -16,7 +16,7 @@ int main()
 	vector<vector<Node> > geographyVector;
 	vector<vector<NodeType> > typeVector;
 
-	//Fill array of Nodes with coordinates
+	//Fill geography vector of Nodes with coordinates
 	geographyVector.resize(gridX);
 	for (int i = 0; i < gridX; i++)
 	{
@@ -34,7 +34,7 @@ int main()
 		}
 	}
 
-	//Fill type array of node types
+	//Fill type vector of node types
 	typeVector.resize(gridX);
 	for (int i = 0; i < gridX; i++)
 	{
@@ -42,70 +42,88 @@ int main()
 
 	}
 
-	for (int j = 0; j < gridY; j++)
+	//Sets up the types from the given map
+	AStarAlgorithm::typeSetup(typeVector);
+
+
+	int choice;
+	cout << "Input 1 to calculate a path, or input 2 to change part of the map" << "\n";
+	cin >> choice;
+
+	string change;
+
+	//Loop until you want to calculate the path, ie. choice == 1
+	while (choice == 2)
 	{
-		int i = 0;
-		while (i < gridX)
-		{
-			typeVector[i][j] = NodeType("r");
-			i++;
-		}
+		//Input coords and a type to change the type map
+		cout << "Input coords and a type, eg. 'a1lake' with no spaces" << "\n" << "Types are: road, lake, hill, forest, mountain." << "\n";
+		cin >> change;
+		AStarAlgorithm::changeType(change, typeVector);
+
+		cout << "Input 1 to calculate a path, or input 2 to change part of the map" << "\n";
+		cin >> choice;
+
 	}
-	
-	cout << AStarAlgorithm::distanceToEnd(geographyVector[5][3], geographyVector[20][2]) << "\n";
-	cout << AStarAlgorithm::distanceToEnd(geographyVector[7][7], geographyVector[5][5]) << "\n";
-	
-	Node *end = &geographyVector[5][2];
-	Node *start = &geographyVector[1][1];
+
+	//variables for taking user input and turning it into the start and end of the route 
+	string startString;
+	string endString;
+	pair<int, int>	startPair;
+	pair<int, int>	endPair;
+	Node *start;
+	Node *end;
+
+	//Loop that sets up the start and end of the route
+	//If the given route ends at a mountain, you must input the coords again
+	do 
+	{
+		//Takes coords in form a3, checking there are only 2 characters input into the console.
+		cout << "Please enter start node's coordinates." << "\n";
+		cin >> startString;
+		while (!(startString.length() > 1 & startString.length() < 3))
+		{
+			cout << "Please enter correct coordinates" << "\n";
+			cin >> startString;
+		}
+		startPair = AStarAlgorithm::stringToInts(startString);
+
+		cout << "Please enter end node's coordinates." << "\n";
+		cin >> endString;
+		while (!(endString.length() > 1 & endString.length() < 3))
+		{
+			cout << "Please enter correct coordinates" << "\n";
+			cin >> endString;
+		}
+		endPair = AStarAlgorithm::stringToInts(endString);
+
+		start = &geographyVector[startPair.first - 1][startPair.second - 1];
+		end = &geographyVector[endPair.first - 1][endPair.second - 1];
+
+		if (AStarAlgorithm::mountainCheck(typeVector, end) == true || AStarAlgorithm::mountainCheck(typeVector, start) == true)
+		{
+			cout << "Route cannot start or end on a mountain, please choose another route" << "\n";
+
+		}
+
+	}
+	while (AStarAlgorithm::mountainCheck(typeVector, end) == true || AStarAlgorithm::mountainCheck(typeVector, start) == true);
+
+	//Node P with lowest F, and vector Q
 	Node *p = start;
 	vector<Node*> q;
+	
+	cout << "Calculating path from " << startString << " to " << endString << "\n";
 
-	//Set all heuristics
-	for (int i = 0; i < gridX; i++)
-	{
-		for (int j = 0; j < gridY; j++)
-		{
-			geographyVector[i][j].setH(AStarAlgorithm::distanceToEnd(geographyVector[i][j], *end));
-			//geographyVector[i][j].printNode();
-			//typeVector[i][j].printType();
-		}
-	}
-
+	start->setH(AStarAlgorithm::distanceToEnd(*start, *end));
 	start->setG(0);
 	start->calculateF();
 
-	/*priority_queue<Node*, vector<Node*>, std::less<Node*> >test;
-	Node* one = &geographyVector[4][2];
-	Node* four = &geographyVector[1][2];
-	Node* two = &geographyVector[3][2];
-	Node* three = &geographyVector[2][2];
-	Node* five = &geographyVector[0][0];
-
-	one->setG(1);
-	two->setG(1);
-	three->setG(1);
-	four->setG(1);
-	five->setG(1);
-
-	one->calculateF();
-	two->calculateF();
-	three->calculateF();
-	four->calculateF();
-	five->calculateF();
-
-	test.push(one);
-	test.push(four);
-	test.push(two);
-	test.push(three);
-	test.push(five);
-
-	test.top()->printNode();*/
-
-
-	//Contains ids of Nodes to check parents
-	priority_queue<Node*, vector<Node*>, std::less<Node*>>openList;
+	//OpenList in a priority queue to automatically get the Node with the least f value
+	priority_queue<Node*, vector<Node*>, LessThanCompareNode>openList;
+	//CloseList in a vector
 	vector<Node*> closeList;
 
+	//Set up starting node with a cost of zero, and put it on openList
 	openList.push(start);
 	start->trueList();
 	start->setG(0);
@@ -113,26 +131,20 @@ int main()
 
  	while (pathFound != true)
 	{
-		//while (openList.empty() == false)
-		cout << "openList top: ";
-		openList.top()->printNode();
+		//Put top of openList (node with least f value) on closed list
 		closeList.push_back(openList.top());
 		p = closeList[cLCount];
+		//Take it off openList
 		openList.pop();
 		cout << "p = ";
 		p->printNode();
 			
-		//Checks if p is end node
-		if (p == end)
-		{
-			pathFound = true;
-		}
 		
-		//Next 5 if/else statements decide which nodes are connected
+		//Next 5 if/else statements decide which nodes are connected and added to vector Q
 
 		//If not at edges of grid
 		if ((p->getX() < gridX - 1) && (p->getX() > 0)
-			&& (p->getY() < gridY - 1) && (p->getY() < gridY - 1))
+			&& (p->getY() < gridY - 1) && (p->getY() > 0))
 		{
 			q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
 			cout << "Added to q: " << "\n";
@@ -164,7 +176,7 @@ int main()
 			cout << "Added to q: " << "\n";
 			q[0]->printNode();
 
-			if (p->getY() != gridY - 1 || p->getY() != 0)
+			if (p->getY() != gridY - 1 & p->getY() != 0)
 			{
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
@@ -187,30 +199,7 @@ int main()
 			cout << "Added to q: " << "\n";
 			q[0]->printNode();
 
-			if (p->getY() != gridY - 1 || p->getY() != 0)
-			{
-				//if pointing up, add node below it to q
-				if (p->getPointUp())
-				{
-					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
-					q[1]->printNode();
-
-				}
-				//else add node above
-				else q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
-				q[1]->printNode();
-
-			}
-		}
-
-		//bottom
-		else if (p->getY() == gridY - 1)
-		{
-			q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
-			cout << "Added to q: " << "\n";
-			q[0]->printNode();
-
-			if (p->getX() != gridX - 1 || p->getX() != 0)
+			if (p->getY() != gridY - 1 & p->getY() != 0)
 			{
 				//if pointing up, add node below it to q
 				if (p->getPointUp())
@@ -227,42 +216,106 @@ int main()
 		}
 
 		//top
-		else if (p->getY() == gridY - 1)
+		else if (p->getY() == 0)
 		{
-			if (p->getY() != gridX - 1 || p->getX() != 0)
+			cout << "Added to q: " << "\n";
+
+			if (p->getX() == 0)
+			{
+				q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+				geographyVector[p->getX() + 1][p->getY()].printNode();
+			}
+
+			if (p->getX() == gridX - 1)
 			{
 				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
-				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
-				cout << "Added to q: " << "\n";
-				q[0]->printNode();
-				q[1]->printNode();
+				geographyVector[p->getX() - 1][p->getY()].printNode();
 
-				//if pointing up, add node below it to q
+			}			
+			
+			//if pointing up, add all nodes around
+
+			else
+			{
+				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+				q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+
 				if (p->getPointUp())
 				{
 					q.push_back(&geographyVector[p->getX()][p->getY() + 1]);
-					q[2]->printNode();
-
 				}
+
+				geographyVector[p->getX() - 1][p->getY()].printNode();
+				geographyVector[p->getX() + 1][p->getY()].printNode();
+				geographyVector[p->getX()][p->getY() + 1].printNode();
+
 			}
+
+			
 		}
 
+		//bottom
+		else if (p->getY() == gridY - 1)
+		{
+			cout << "Added to q: " << "\n";
+
+			if (p->getX() == 0)
+			{
+				q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+				geographyVector[p->getX() + 1][p->getY()].printNode();
+			}
+
+			if (p->getX() == gridX - 1)
+			{
+				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+				geographyVector[p->getX() - 1][p->getY()].printNode();
+
+			}
+
+			//if pointing down, add all nodes around
+
+			else if (!p->getPointUp())
+			{
+				q.push_back(&geographyVector[p->getX() - 1][p->getY()]);
+				q.push_back(&geographyVector[p->getX() + 1][p->getY()]);
+				q.push_back(&geographyVector[p->getX()][p->getY() - 1]);
+				geographyVector[p->getX() - 1][p->getY()].printNode();
+				geographyVector[p->getX() + 1][p->getY()].printNode();
+				geographyVector[p->getX()][p->getY() - 1].printNode();
+
+			}
+
+		}
+
+		//Loop through q to see if a connected node is the end node
+		//If so, set the parent of the end node to P
+		for (int i = 0; i < q.size(); i++)
+		{
+			if (q[i] == end)
+			{
+				end->setParent(p);
+				pathFound = true;
+				cout << "PATH FOUND!" << "\n";
+			}
+		}
 	
 
 		//For each connected node, q[j]
 		for (int j = 0; j < q.size(); j++)
 		{
 				
-			//calculate G and F
+			//calculate H, G and F
+			int newH = AStarAlgorithm::distanceToEnd(*q[j], *end);
 			int newG = AStarAlgorithm::getTileCost(typeVector, q[j]) + p->getG();
 			int newF = newG + q[j]->getH();
 			//Is Q on open / closed list?
 			if (q[j]->getOnList() == true)
 			{
-				if (newF < q[j]->getF())
+				if (newF < q[j]->getH())
 				{
-					//assign new F, G and H values
+					//assign new F, G, and H values and set P as Q's parent
 					q[j]->setParent(p);
+					q[j]->setH(newH);
 					q[j]->setG(newG);
 					q[j]->calculateF();
 				}
@@ -270,43 +323,53 @@ int main()
 
 			else
 			{
-				openList.push(q[j]);
-				q[j]->setParent(p);
-				q[j]->setG(newG);
-				q[j]->calculateF();
+				//If the node type is mountain, then do not put on openList, ie. ignore the node, else...
+				if (typeVector[q[j]->getX()][q[j]->getY()].getType() != "mountain")
+				{
+					//Put on openList, assign new F, G, and H values and set P as Q's parent
+
+					openList.push(q[j]);
+					q[j]->trueList();
+					q[j]->setParent(p);
+					q[j]->setH(newH);
+					q[j]->setG(newG);
+					q[j]->calculateF();
+					cout << "ADDED TO OPENLIST: " << "\n";
+					q[j]->printNode();
+				}
 			}
+			//Remake the heap for the openList after changing values
+			make_heap(const_cast<Node**>(&openList.top()), const_cast<Node**>(&openList.top()) + openList.size(), LessThanCompareNode());
 							
 		}
 
-		cout << "ADDED TO OPENLIST: " << "\n";
-		for (int i = 0; i < q.size(); i++)
-		{
-			q[i]->printNode();
-		}
+		//clear the vector q
 		q.clear();
+		//increment counter for the closedList
 		cLCount++;
 	}   
 
+	vector<Node> path;
+	path.push_back(*end);
 
 
-		//If triangle points up and is not on bottom of grid 
-		//(no connected nodes can be below bottom and only 
-		//nodes that point up can have that possible) 
-		/*if (p->getPointUp() & (p->getY() < gridY - 1))
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				q = geographyVector[p->getX() - 1][p->getY()];
-			}
-			
-		}*/
+	int pathCount = 0;
 
-	
-	
-	///*while (pathFound != true)
-	//{
+	//Loop through from the end node and find each parent until the start node to find the path
+	do{
+		
+		path.push_back(*path[pathCount].getParent());
+		pathCount++;
+	}
 
-	//}*/
+	while ((path[pathCount].getX() != start->getX()) || (path[pathCount].getY() != start->getY()));
+
+	cout << "PATH: " << startString << " to " << endString <<"\n";
+	//Print the path
+	for (int i = path.size() - 1; i >= 0; i--)
+	{
+		path[i].printPos();
+	}
 
 	system("pause");
 

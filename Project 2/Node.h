@@ -11,19 +11,19 @@ public:
 	void setH(int heuristic) { h = heuristic; };
 	void setG(int g) {  this->g = g; }
 	void setParent(Node *p) { parent = p; }
-	int getX() { return x; };
-	int getY() { return y; };
-	int getH() { return h; }
-	int getG() { return g; }
-	int getF() { return f; }
-	int getID() { return id; }
-	int getParentG() { return parent->getG(); }
-	bool getPointUp() { return pointUp; }
+	int getX() const { return x; };
+	int getY() const { return y; };
+	int getH() const { return h; }
+	int getG() const { return g; }
+	int getF() const { return f; }
+	int getID() const { return id; }
+	Node* getParent() const { return parent; }
+	bool getPointUp() const { return pointUp; }
 	void calculateF() { f = g + h; }
-	bool getOnList();
+	bool getOnList() const;
 	void trueList();
-	void printNode();
-	bool operator<(const Node& rhs);
+	void printNode() const;
+	void printPos() const;
 
 private:
 	int x;
@@ -33,15 +33,17 @@ private:
 	int f;
 	int id;
 	bool pointUp;
-	Node *parent;
+	Node *parent = NULL;
 	bool onList = false;
 };
 
-//struct LessThanCompareNode 
-//{
-//	bool operator()(Node* n1, Node* n2) {
-//		// true if n1 ordered before n2
-//		return n1->getF() > n2->getF();
-//	}
-//};
+struct LessThanCompareNode 
+{
+	public:
+		bool operator()(const Node *n1, const Node *n2) 
+		{
+			// true if n1 ordered before n2
+			return n1->getF() > n2->getF();
+		}
+};
 

@@ -30,7 +30,7 @@ Node::~Node()
 {
 }
 
-bool Node::getOnList()
+bool Node::getOnList() const
 {
 	return onList;
 }
@@ -40,15 +40,24 @@ void Node::trueList()
 	onList = true;
 }
 
-bool Node::operator<(const Node& rhs)
+void Node::printNode() const
 {
-	return this->f < rhs.f;
+	cout << "Node pos: (" << x << ", " << y << ") H = " << h << " G= " << g << " F = " << f << " ID = " << id
+		<< " Points up = " << pointUp;
+	
+	if (parent != NULL)
+	{
+		cout << " Parent: (" << parent->x << ", " << parent->y << ")";
+	}
+
+	cout << "\n";
 }
 
-void Node::printNode()
+void Node::printPos() const
 {
-	cout << "Node pos: (" << x << ", " << y << ") H = " << h << " F = " << f << " ID = " << id << " Points up = " << pointUp << "\n";
+	int xInt = x;
+	char xChar = x + 65;
+	char lowerXCha = tolower(xChar);
+
+	cout << "Node pos: (" << lowerXCha << ", " << y + 1 << ")" << "\n";
 }
-
-
-
